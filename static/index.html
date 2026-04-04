@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Extractor API</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0f1e; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { max-width: 720px; width: 100%; padding: 40px 24px; }
+        .badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: #22c55e; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
+        .badge.loading { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); color: #f59e0b; }
+        .badge.error { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.3); color: #ef4444; }
+        h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { color: #64748b; margin-bottom: 32px; font-size: 15px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+        .card { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 16px 20px; }
+        .card h3 { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+        .endpoint { background: rgba(59,130,246,.05); border: 1px solid rgba(59,130,246,.15); border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; font-family: monospace; font-size: 12px; }
+        .method { color: #60a5fa; font-weight: 700; margin-right: 8px; }
+        .method.post { color: #34d399; }
+        .method.delete { color: #f87171; }
+        .links { display: flex; gap: 12px; }
+        a { color: #60a5fa; text-decoration: none; font-size: 13px; font-weight: 500; }
+        a:hover { text-decoration: underline; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; }
+        .dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
+        .dot.error { background: #ef4444; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="badge loading" id="status-badge">
+            <span class="dot loading" id="dot"></span>
+            <span id="status-text">Checking API...</span>
+        </div>
+
+        <h1>CV Extractor API</h1>
+        <p class="subtitle">FastAPI Production Backend · Phase 1 · German Recruitment Platform</p>
+
+        <div class="grid">
+            <div class="card">
+                <h3>Candidates</h3>
+                <div class="endpoint"><span class="method post">POST</span>/api/v1/candidates/upload</div>
+                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates</div>
+                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates/{id}</div>
+                <div class="endpoint"><span class="method delete">DEL</span>/api/v1/candidates/{id}</div>
+            </div>
+            <div class="card">
+                <h3>Processing</h3>
+                <div class="endpoint"><span class="method post">POST</span>/api/v1/candidates/{id}/extract</div>
+                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates/{id}/status</div>
+                <div class="endpoint"><span class="method post">POST</span>/api/v1/candidates/{id}/approve</div>
+                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates/{id}/review</div>
+            </div>
+            <div class="card">
+                <h3>IdentCheck</h3>
+                <div class="endpoint"><span class="method post">POST</span>/api/v1/candidates/{id}/identcheck/upload</div>
+                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates/{id}/identcheck</div>
+                <div class="endpoint"><span class="method post">POST</span>/api/v1/identcheck/{id}/verify</div>
+            </div>
+            <div class="card">
+                <h3>Settings</h3>
+                <div class="endpoint"><span class="method">GET</span>/api/v1/settings/providers</div>
+                <div class="endpoint"><span class="method post">POST</span>/api/v1/settings/providers</div>
+                <div class="endpoint"><span class="method post">POST</span>/api/v1/settings/providers/{id}/validate</div>
+            </div>
+        </div>
+
+        <div class="links">
+            <a href="/docs">📖 Swagger UI</a>
+            <a href="/redoc">📄 ReDoc</a>
+            <a href="/api/v1/health">💚 Health Check</a>
+        </div>
+    </div>
+    <script>
+        fetch('/api/v1/health')
+            .then(r => r.json())
+            .then(d => {
+                document.getElementById('status-badge').className = 'badge';
+                document.getElementById('dot').className = 'dot';
+                document.getElementById('status-text').textContent = `API Healthy · v${d.version}`;
+            })
+            .catch(() => {
+                document.getElementById('status-badge').className = 'badge error';
+                document.getElementById('dot').className = 'dot error';
+                document.getElementById('status-text').textContent = 'API Unreachable';
+            });
+    </script>
+</body>
+</html>
