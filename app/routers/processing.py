@@ -7,6 +7,14 @@ from app.tasks.extraction_tasks import extract_candidate_cv
 router = APIRouter()
 
 
+def _dispatch_extraction(candidate_id: str):
+    """Call Celery .delay() or call function directly depending on environment."""
+    try:
+        return extract_candidate_cv.delay(candidate_id)
+    except AttributeError:
+        return extract_candidate_cv(candidate_id)
+
+
 @router.post("/candidates/{candidate_id}/extract")
 async def trigger_extraction(candidate_id: str, db: AsyncSession = Depends(get_db)):
     service = CandidateService(db)
@@ -17,7 +25,7 @@ async def trigger_extraction(candidate_id: str, db: AsyncSession = Depends(get_d
     if candidate.status not in ["UPLOADED", "FAILED"]:
         raise HTTPException(status_code=400, detail=f"Cannot extract from status: {candidate.status}")
 
-    task = extract_candidate_cv.delay(candidate_id)
+    task = _dispatch_extraction(candidate_id)
     return {"task_id": task.id, "candidate_id": candidate_id, "status": "queued"}
 
 

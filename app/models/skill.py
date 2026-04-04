@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 from sqlalchemy import String, ForeignKey, Float, Boolean, Text, func
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
+from app.db_types import PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
