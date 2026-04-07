@@ -1,0 +1,86 @@
+﻿{
+  "candidate": {
+    "full_name": "Dariusz Jan Paluch",
+    "nationality": "Polish",
+    "date_of_birth": "1985-03-15",
+    "position": "Schweißer (MIG/MAG)"
+  },
+  "job_posting": {
+    "title": "Schweißer (MIG/MAG)",
+    "ekp": "",
+    "svs": "",
+    "start_date": ""
+  },
+  "employment_history": [
+    {
+      "start_date": "01.2020",
+      "end_date": "heute",
+      "employer": "Stahlbau GmbH, Berlin",
+      "position": "Schweißer",
+      "duties": [
+        "MAG Schweißen (135) an Stahlkonstruktionen",
+        "WIG Schweißen (141) an Edelstahlbauteilen",
+        "Blechbearbeitung und Montage"
+      ]
+    },
+    {
+      "start_date": "06.2015",
+      "end_date": "12.2019",
+      "employer": "Metallbau Müller, Hamburg",
+      "position": "Schweißer",
+      "duties": [
+        "MAG Schweißen an Brückenbau",
+        "Schweißarbeiten frei Hand",
+        "Qualitätskontrolle"
+      ]
+    },
+    {
+      "start_date": "09.2009",
+      "end_date": "05.2015",
+      "employer": "Maschinenbau Schmidt, Polen",
+      "position": "Schweißergehilfe",
+      "duties": [
+        "Hilfsarbeiten in der Schweißerei",
+        "Blechzuschnitt und Vorbereitung"
+      ]
+    }
+  ],
+  "education": {
+    "higher_education": [
+      {
+        "years": "2005 - 2009",
+        "institution": "Technikum Mechaniczne, Warschau",
+        "field": "Metallverarbeitung"
+      }
+    ],
+    "further_training": [
+      {
+        "years": "2016",
+        "institution": "TÜV Akademie",
+        "field": "Schweißerzusatzqualifikation MAG (135)"
+      },
+      {
+        "years": "2020",
+        "institution": "DVS Zertifikat",
+        "field": "Schweißaufsicht (verantwortlich)"
+      }
+    ]
+  },
+  "technical_skills": [
+    {"name": "MAG Schweißen", "level": "Expert"},
+    {"name": "WIG Schweißen", "level": "Advanced"},
+    {"name": "Schweißarbeiten frei Hand", "level": "Expert"},
+    {"name": "Blechbearbeitung", "level": "Advanced"},
+    {"name": "Montieren von Stahlkonstruktionen", "level": "Expert"},
+    {"name": "Installation", "level": "Advanced"},
+    {"name": "Demontage", "level": "Advanced"},
+    {"name": "Bohren", "level": "Advanced"},
+    {"name": "Schweißarbeiten mit Schweißroboter", "level": "Intermediate"},
+    {"name": "Sägen / Schleifen / Schrauben", "level": "Advanced"}
+  ],
+  "language_skills": [
+    {"language": "Polnisch", "level": "Muttersprache"},
+    {"language": "Deutsch", "level": "B1"},
+    {"language": "Englisch", "level": "A2"}
+  ]
+}

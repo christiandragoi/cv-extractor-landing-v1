@@ -41,8 +41,17 @@ async def list_candidates(
     db: AsyncSession = Depends(get_db)
 ):
     from app.models.candidate import Candidate
+    from sqlalchemy.orm import selectinload
     result = await db.execute(
-        select(Candidate).order_by(Candidate.created_at.desc()).offset(skip).limit(limit)
+        select(Candidate)
+        .options(
+            selectinload(Candidate.employment_history),
+            selectinload(Candidate.skill_records),
+            selectinload(Candidate.language_records)
+        )
+        .order_by(Candidate.created_at.desc())
+        .offset(skip)
+        .limit(limit)
     )
     return result.scalars().all()
 

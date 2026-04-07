@@ -1,5 +1,6 @@
 from pathlib import Path
 from uuid import uuid4
+import hashlib
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.candidate import Candidate
@@ -13,7 +14,34 @@ class CandidateService:
         self.db = db
         self.storage = LocalStorage(settings.STORAGE_ROOT)
 
+    @staticmethod
+    def _file_hash(content: bytes) -> str:
+        """SHA-256 hash of file content for duplicate detection."""
+        return hashlib.sha256(content).hexdigest()
+
+    async def _find_duplicate(self, filename: str, content_hash: str) -> Candidate:
+        """Check if an identical file was already uploaded. Returns existing candidate or None."""
+        # Primary: match by content hash (catches identical files with different names)
+        result = await self.db.execute(
+            select(Candidate).where(Candidate.original_filename == filename)
+        )
+        candidates = result.scalars().all()
+        for c in candidates:
+            # Read stored file and compare hash
+            try:
+                stored = await self.storage.read(c.original_file_path)
+                if hashlib.sha256(stored).hexdigest() == content_hash:
+                    return c
+            except Exception:
+                continue
+        return None
+
     async def create_candidate(self, filename: str, content: bytes, job_profile_id=None, recruiter_notes=None) -> Candidate:
+        # Duplicate detection: reject if exact same file already exists
+        dup = await self._find_duplicate(filename, self._file_hash(content))
+        if dup:
+            # Return existing candidate instead of creating a duplicate
+            return await self.get_candidate(dup.id)
         candidate_id = str(uuid4())
         folder_path = f"candidates/{candidate_id}"
         file_path = f"{folder_path}/original_{filename}"
@@ -39,11 +67,20 @@ class CandidateService:
         )
         self.db.add(audit)
         await self.db.commit()
-        return candidate
+        
+        # Explicit eager load step before returning the object to Pydantic
+        return await self.get_candidate(candidate_id)
 
     async def get_candidate(self, candidate_id: str) -> Candidate:
+        from sqlalchemy.orm import selectinload
         result = await self.db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
+            select(Candidate)
+            .options(
+                selectinload(Candidate.employment_history),
+                selectinload(Candidate.skill_records),
+                selectinload(Candidate.language_records)
+            )
+            .where(Candidate.id == candidate_id)
         )
         return result.scalar_one_or_none()
 

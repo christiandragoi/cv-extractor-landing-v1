@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Dict
+import uuid
 from uuid import UUID
 from sqlalchemy import String, Text, Boolean, DateTime, func
 from app.db_types import PGUUID, JSONB
@@ -10,7 +11,7 @@ from app.database import Base
 class JobProfile(Base):
     __tablename__ = "job_profiles"
 
-    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
+    id: Mapped[UUID] = mapped_column(PGUUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     extraction_instructions: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

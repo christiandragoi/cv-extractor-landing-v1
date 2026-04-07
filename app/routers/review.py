@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.database import get_db
 from app.models.candidate import Candidate
 from app.models.employment import EmploymentRecord
@@ -10,7 +11,15 @@ router = APIRouter()
 
 @router.get("/candidates/{candidate_id}/review")
 async def get_review_data(candidate_id: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
+    result = await db.execute(
+        select(Candidate)
+        .options(
+            selectinload(Candidate.employment_history),
+            selectinload(Candidate.skill_records),
+            selectinload(Candidate.language_records),
+        )
+        .where(Candidate.id == candidate_id)
+    )
     candidate = result.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=404, detail="Not found")
@@ -90,17 +99,32 @@ async def update_review(candidate_id: str, updates: dict, db: AsyncSession = Dep
 @router.post("/candidates/{candidate_id}/approve")
 async def approve_candidate(candidate_id: str, approved_by: str = "recruiter", db: AsyncSession = Depends(get_db)):
     from datetime import datetime
-    result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
+    from sqlalchemy.orm import selectinload
+    result = await db.execute(
+        select(Candidate)
+        .options(
+            selectinload(Candidate.employment_history),
+            selectinload(Candidate.skill_records)
+        )
+        .where(Candidate.id == candidate_id)
+    )
     candidate = result.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=404, detail="Not found")
     if candidate.status != "EXTRACTED":
-        raise HTTPException(status_code=400, detail="Can only approve EXTRACTED candidates")
+        raise HTTPException(status_code=400, detail=f"Can only approve EXTRACTED candidates. Current status: {candidate.status}")
 
-    unreviewed = sum(1 for emp in candidate.employment_history if emp.needs_review)
-    unreviewed += sum(1 for skill in candidate.skill_records if skill.needs_review)
-    if unreviewed > 0:
-        raise HTTPException(status_code=400, detail=f"{unreviewed} items still need review")
+    unreviewed_emp = [emp.id for emp in candidate.employment_history if emp.needs_review]
+    unreviewed_skills = [skill.id for skill in candidate.skill_records if skill.needs_review]
+    unreviewed_count = len(unreviewed_emp) + len(unreviewed_skills)
+
+    if unreviewed_count > 0:
+        detail = {
+            "error": f"{unreviewed_count} items still need review",
+            "unreviewed_employment_ids": [str(i) for i in unreviewed_emp],
+            "unreviewed_skill_ids": [str(i) for i in unreviewed_skills]
+        }
+        raise HTTPException(status_code=400, detail=detail)
 
     candidate.status = "APPROVED"
     candidate.approval_timestamp = datetime.utcnow()

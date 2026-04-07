@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     def encryption_key_bytes(self) -> bytes:
         import base64
         if not self.ENCRYPTION_KEY:
-            return base64.urlsafe_b64encode(b'development-key-32bytes-long!!!')
+            return base64.urlsafe_b64encode(b'this-is-a-32-character-long-key!')
         try:
             return base64.urlsafe_b64decode(self.ENCRYPTION_KEY)
         except Exception:

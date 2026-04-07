@@ -65,3 +65,51 @@ async def validate_provider(provider_id: str, db: AsyncSession = Depends(get_db)
         provider.is_validated = False
         await db.commit()
         return ProviderValidationResponse(is_valid=False, latency_ms=0, error=str(e))
+
+
+@router.patch("/providers/{provider_id}")
+async def update_provider(provider_id: str, data: dict, db: AsyncSession = Depends(get_db)):
+    provider = await db.get(AIProvider, provider_id)
+    if not provider:
+        raise HTTPException(status_code=404, detail="Provider not found")
+    
+    if "display_name" in data:
+        provider.display_name = data["display_name"]
+    if "priority" in data:
+        provider.priority = data["priority"]
+    if "model_selected" in data:
+        provider.model_selected = data["model_selected"]
+    if "api_key" in data and data["api_key"]:
+        manager = ProviderManager()
+        provider.api_key_encrypted = manager.encrypt_key(data["api_key"])
+        provider.api_key_hint = data["api_key"][-4:] if len(data["api_key"]) >= 4 else "****"
+    
+    await db.commit()
+    return {"status": "success"}
+
+
+from app.models.system_setting import SystemSetting
+from app.schemas.settings import SystemSettingRead
+
+@router.get("/system", response_model=List[SystemSettingRead])
+async def list_system_settings(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(SystemSetting))
+    return result.scalars().all()
+
+@router.patch("/system/{setting_id}")
+async def update_system_setting(setting_id: str, data: dict, db: AsyncSession = Depends(get_db)):
+    setting = await db.get(SystemSetting, setting_id)
+    if not setting:
+        raise HTTPException(status_code=404, detail="Setting not found")
+    
+    if "value" in data and data["value"]:
+        manager = ProviderManager()
+        setting.value_encrypted = manager.encrypt_key(data["value"])
+        setting.value_hint = data["value"][-4:] if len(data["value"]) >= 4 else "****"
+    
+    if "is_active" in data:
+        setting.is_active = data["is_active"]
+        
+    await db.commit()
+    return {"status": "success"}
+

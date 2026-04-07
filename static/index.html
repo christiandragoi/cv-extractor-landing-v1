@@ -1,92 +1,495 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV Extractor API</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', sans-serif; background: #0a0f1e; color: #e2e8f0; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .container { max-width: 720px; width: 100%; padding: 40px 24px; }
-        .badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: #22c55e; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-bottom: 24px; }
-        .badge.loading { background: rgba(245,158,11,.1); border-color: rgba(245,158,11,.3); color: #f59e0b; }
-        .badge.error { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.3); color: #ef4444; }
-        h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 8px; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .subtitle { color: #64748b; margin-bottom: 32px; font-size: 15px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
-        .card { background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 16px 20px; }
-        .card h3 { font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
-        .endpoint { background: rgba(59,130,246,.05); border: 1px solid rgba(59,130,246,.15); border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; font-family: monospace; font-size: 12px; }
-        .method { color: #60a5fa; font-weight: 700; margin-right: 8px; }
-        .method.post { color: #34d399; }
-        .method.delete { color: #f87171; }
-        .links { display: flex; gap: 12px; }
-        a { color: #60a5fa; text-decoration: none; font-size: 13px; font-weight: 500; }
-        a:hover { text-decoration: underline; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; }
-        .dot.loading { background: #f59e0b; animation: pulse 1s infinite; }
-        .dot.error { background: #ef4444; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV Extractor | Recruitment Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root{--bg:#06080f;--bg2:#0d1117;--bg3:#161b22;--card:#161b22;--card-h:#1c2333;--border:#21262d;--border-l:#30363d;--txt:#e6edf3;--txt2:#c9d1d9;--muted:#7d8590;--accent:#58a6ff;--accent2:#1f6feb;--accent-bg:rgba(56,139,253,.1);--success:#3fb950;--success-bg:rgba(63,185,80,.1);--warn:#d29922;--warn-bg:rgba(210,153,34,.1);--danger:#f85149;--danger-bg:rgba(248,81,73,.1);--info:#79c0ff;--r:12px;--rs:8px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;line-height:1.6}
+.app{display:flex;min-height:100vh}
+.sidebar{width:232px;background:var(--bg2);border-right:1px solid var(--border);position:fixed;height:100vh;display:flex;flex-direction:column;z-index:100}
+.sidebar-logo{padding:18px 18px 14px;border-bottom:1px solid var(--border)}
+.sidebar-logo h1{font-size:16px;font-weight:800;letter-spacing:-.3px;background:linear-gradient(135deg,var(--accent),#a371f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sidebar-logo p{font-size:10px;color:var(--muted);margin-top:1px}
+.sidebar-nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-sec{padding:0 8px;margin-bottom:16px}
+.nav-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);padding:0 10px;margin-bottom:5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--rs);cursor:pointer;transition:all .15s;color:var(--txt2);font-size:13px;font-weight:500;margin-bottom:1px;user-select:none}
+.nav-item:hover{background:var(--bg3);color:var(--txt)}
+.nav-item.active{background:var(--accent2);color:#fff}
+.nav-item .ni{width:16px;height:16px;display:flex;align-items:center;justify-content:center}
+.nav-badge{margin-left:auto;background:var(--danger);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;font-weight:700}
+.nav-sep{height:1px;background:var(--border);margin:6px 14px}
+.sidebar-ft{padding:12px 14px;border-top:1px solid var(--border)}
+.api-st{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}
+.api-dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+.api-dot.off{background:var(--danger)}
+.main{flex:1;margin-left:232px;padding:22px 28px;min-height:100vh;max-width:1200px}
+.page-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.page-hdr h2{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.page-hdr p{color:var(--muted);font-size:12px;margin-top:2px}
+.hidden{display:none!important}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s;font-family:inherit;text-decoration:none;white-space:nowrap}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-p{background:var(--accent2);color:#fff;border-color:var(--accent2)}.btn-p:hover:not(:disabled){background:#388bfd}
+.btn-s{background:var(--bg3);color:var(--txt);border-color:var(--border)}.btn-s:hover:not(:disabled){background:var(--card-h);border-color:var(--border-l)}
+.btn-ok{background:var(--success);color:#fff}
+.btn-d{background:transparent;color:var(--danger);border-color:var(--border)}.btn-d:hover:not(:disabled){background:var(--danger-bg);border-color:var(--danger)}
+.btn-g{background:transparent;color:var(--muted);border:none;padding:5px 8px}.btn-g:hover{color:var(--txt);background:var(--bg3)}
+.btn-sm{padding:4px 10px;font-size:11px}.btn-lg{padding:11px 22px;font-size:13px;border-radius:var(--r)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.card-t{font-size:14px;font-weight:600}
+.card-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.fg{margin-bottom:14px}
+.fg label,.fl{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+input,select,textarea{width:100%;padding:8px 11px;background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);color:var(--txt);font-size:12px;font-family:inherit;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+select{cursor:pointer}textarea{min-height:70px;resize:vertical;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:9px 12px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:10px 12px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(22,27,34,.5)}
+.bs{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.3px}
+.bs-UPLOADED{background:rgba(125,133,144,.15);color:#8b949e}
+.bs-EXTRACTING{background:var(--accent-bg);color:var(--accent)}
+.bs-EXTRACTED{background:var(--warn-bg);color:var(--warn)}
+.bs-PENDING_REVIEW{background:var(--danger-bg);color:var(--danger)}
+.bs-APPROVED{background:var(--success-bg);color:var(--success)}
+.bs-COMPLETED{background:rgba(121,192,255,.1);color:var(--info)}
+.bs-FAILED{background:var(--danger-bg);color:var(--danger)}
+.progress-bar{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:6px}
+.progress-fill{height:100%;background:var(--accent);transition:width .4s;border-radius:2px}
+
+/* Wizard */
+.wiz-steps{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border)}
+.wiz-step{display:flex;align-items:center;gap:7px;padding:9px 18px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;user-select:none;transition:all .2s}
+.wiz-step:hover{color:var(--txt2)}.wiz-step.active{color:var(--accent);border-bottom-color:var(--accent)}
+.wiz-step.done{color:var(--success)}
+.wiz-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:var(--bg3);border:1px solid var(--border);color:var(--muted);flex-shrink:0}
+.wiz-step.active .wiz-num{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.wiz-step.done .wiz-num{background:var(--success-bg);border-color:var(--success);color:var(--success)}
+.wiz-panel{display:none}.wiz-panel.active{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.uz{border:2px dashed var(--border);border-radius:var(--r);padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2)}
+.uz:hover{border-color:var(--accent);background:var(--accent-bg)}
+.uz.has-file{border-style:solid;border-color:var(--success);background:var(--success-bg);cursor:default}
+.uz .u-icon{font-size:32px;margin-bottom:10px;opacity:.6}
+.uz .u-title{font-size:14px;font-weight:600;margin-bottom:3px}
+.uz .u-desc{font-size:11px;color:var(--muted)}
+.ufi{display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg);border-radius:var(--rs);border:1px solid var(--border);margin-top:10px;text-align:left}
+.ufi .fi{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ufi .fn{font-size:12px;font-weight:600}.ufi .fs{font-size:10px;color:var(--muted)}
+
+.inst-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-top:18px}
+.inst-panel .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.inst-panel .pt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.inst-toggle{font-size:10px;color:var(--accent);cursor:pointer;background:none;border:none;font-family:inherit}
+.inst-toggle:hover{text-decoration:underline}
+
+.proc-state{text-align:center;padding:50px 20px}
+.proc-spin{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc-state h3{font-size:16px;font-weight:600;margin-bottom:4px}
+.proc-state p{color:var(--muted);font-size:12px}
+.proc-state .timer{font-size:22px;font-weight:700;color:var(--accent);margin-top:10px;font-variant-numeric:tabular-nums}
+
+.res-banner{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:var(--r);margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.res-banner.ok{background:var(--success-bg);border:1px solid rgba(63,185,80,.2)}
+.res-banner.err{background:var(--danger-bg);border:1px solid rgba(248,81,73,.2)}
+.res-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.res-field{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:12px}
+.res-fl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+.res-fv{font-size:12px;color:var(--txt2);min-height:18px;line-height:1.5}
+.res-fv.empty{color:var(--muted);font-style:italic;font-size:11px}
+
+.recent-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--rs);border:1px solid var(--border);margin-bottom:5px;transition:all .15s;cursor:pointer}
+.recent-item:hover{background:var(--card-h);border-color:var(--border-l)}
+.recent-item .ri-name{font-size:12px;font-weight:600}
+.recent-item .ri-date{font-size:10px;color:var(--muted)}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;border-radius:3px 0 0 3px}
+.stat-card:nth-child(1)::before{background:var(--accent)}
+.stat-card:nth-child(2)::before{background:var(--warn)}
+.stat-card:nth-child(3)::before{background:var(--success)}
+.stat-card:nth-child(4)::before{background:var(--danger)}
+.stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.stat-val{font-size:26px;font-weight:800;margin:3px 0;letter-spacing:-1px}
+.stat-sub{font-size:11px;color:var(--muted)}
+
+.toast-ct{position:fixed;top:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;display:flex;align-items:center;gap:8px;min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:slideIn .25s ease;font-size:12px}
+@keyframes slideIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast.ok{border-left:3px solid var(--success)}
+.toast.er{border-left:3px solid var(--danger)}
+
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;padding:18px;backdrop-filter:blur(4px)}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:740px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-ftr{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.modal-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1;padding:3px}
+.modal-close:hover{color:var(--txt)}
+
+.rev-dot{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.rev-dot.pending{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn)}
+.rev-dot.ok{background:var(--success-bg);color:var(--success);border:1px solid var(--success)}
+
+.gap-warn{background:var(--warn-bg);border-left:3px solid var(--warn);padding:9px 12px;border-radius:0 var(--rs) var(--rs) 0;margin-top:7px;font-size:12px}
+
+.drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg2)}
+.drop-zone:hover,.drop-zone.over{border-color:var(--accent);background:var(--accent-bg)}
+.drop-icon{font-size:36px;margin-bottom:10px;opacity:.5}
+
+.prov-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.prov-card .pn{font-size:13px;font-weight:700}.prov-card .pt{font-size:10px;color:var(--muted)}
+.prov-card .pk{margin-top:8px;background:var(--bg);padding:7px 10px;border-radius:5px;font-family:monospace;font-size:11px;color:var(--txt2)}
+.prov-card .pm{font-size:10px;color:var(--muted);margin-top:6px}
+.prov-st{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.prov-st.ok{background:var(--success-bg);color:var(--success)}
+.prov-st.err{background:var(--danger-bg);color:var(--danger)}
+.prov-st.test{background:var(--accent-bg);color:var(--accent)}
+
+.sys-row{display:grid;grid-template-columns:2fr 3fr 3fr;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)}
+.sys-row:last-child{border-bottom:none}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pulse{animation:pulse 1.5s infinite}
+@media(max-width:900px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.res-fields,.stats-grid,.grid2{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="badge loading" id="status-badge">
-            <span class="dot loading" id="dot"></span>
-            <span id="status-text">Checking API...</span>
-        </div>
+<div class="app">
 
-        <h1>CV Extractor API</h1>
-        <p class="subtitle">FastAPI Production Backend · Phase 1 · German Recruitment Platform</p>
-
-        <div class="grid">
-            <div class="card">
-                <h3>Candidates</h3>
-                <div class="endpoint"><span class="method post">POST</span>/api/v1/candidates/upload</div>
-                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates</div>
-                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates/{id}</div>
-                <div class="endpoint"><span class="method delete">DEL</span>/api/v1/candidates/{id}</div>
-            </div>
-            <div class="card">
-                <h3>Processing</h3>
-                <div class="endpoint"><span class="method post">POST</span>/api/v1/candidates/{id}/extract</div>
-                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates/{id}/status</div>
-                <div class="endpoint"><span class="method post">POST</span>/api/v1/candidates/{id}/approve</div>
-                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates/{id}/review</div>
-            </div>
-            <div class="card">
-                <h3>IdentCheck</h3>
-                <div class="endpoint"><span class="method post">POST</span>/api/v1/candidates/{id}/identcheck/upload</div>
-                <div class="endpoint"><span class="method">GET</span>/api/v1/candidates/{id}/identcheck</div>
-                <div class="endpoint"><span class="method post">POST</span>/api/v1/identcheck/{id}/verify</div>
-            </div>
-            <div class="card">
-                <h3>Settings</h3>
-                <div class="endpoint"><span class="method">GET</span>/api/v1/settings/providers</div>
-                <div class="endpoint"><span class="method post">POST</span>/api/v1/settings/providers</div>
-                <div class="endpoint"><span class="method post">POST</span>/api/v1/settings/providers/{id}/validate</div>
-            </div>
-        </div>
-
-        <div class="links">
-            <a href="/docs">📖 Swagger UI</a>
-            <a href="/redoc">📄 ReDoc</a>
-            <a href="/api/v1/health">💚 Health Check</a>
-        </div>
+<aside class="sidebar">
+  <div class="sidebar-logo"><h1>CV Extractor</h1><p>German Recruitment Platform</p></div>
+  <nav class="sidebar-nav">
+    <div class="nav-sec">
+      <div class="nav-lbl">Workflow</div>
+      <div class="nav-item active" data-page="extract" onclick="nav('extract',this)"><span class="ni"><i data-lucide="scan-search" style="width:15px;height:15px"></i></span>Extraction</div>
+      <div class="nav-item" data-page="candidates" onclick="nav('candidates',this)"><span class="ni"><i data-lucide="users" style="width:15px;height:15px"></i></span>Candidates<span class="nav-badge hidden" id="rev-badge">0</span></div>
     </div>
-    <script>
-        fetch('/api/v1/health')
-            .then(r => r.json())
-            .then(d => {
-                document.getElementById('status-badge').className = 'badge';
-                document.getElementById('dot').className = 'dot';
-                document.getElementById('status-text').textContent = `API Healthy · v${d.version}`;
-            })
-            .catch(() => {
-                document.getElementById('status-badge').className = 'badge error';
-                document.getElementById('dot').className = 'dot error';
-                document.getElementById('status-text').textContent = 'API Unreachable';
-            });
-    </script>
+    <div class="nav-sep"></div>
+    <div class="nav-sec">
+      <div class="nav-lbl">Management</div>
+      <div class="nav-item" data-page="templates" onclick="nav('templates',this)"><span class="ni"><i data-lucide="file-stack" style="width:15px;height:15px"></i></span>Templates</div>
+      <div class="nav-item" data-page="identcheck" onclick="nav('identcheck',this)"><span class="ni"><i data-lucide="badge-check" style="width:15px;height:15px"></i></span>IdentCheck</div>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-sec">
+      <div class="nav-lbl">System</div>
+      <div class="nav-item" data-page="settings" onclick="nav('settings',this)"><span class="ni"><i data-lucide="settings" style="width:15px;height:15px"></i></span>AI Settings</div>
+      <div class="nav-item" data-page="dashboard" onclick="nav('dashboard',this)"><span class="ni"><i data-lucide="layout-dashboard" style="width:15px;height:15px"></i></span>Dashboard</div>
+    </div>
+  </nav>
+  <div class="sidebar-ft"><div class="api-st"><span class="api-dot" id="api-dot"></span><span id="api-txt">Checking...</span></div></div>
+</aside>
+
+<main class="main">
+  <div class="page-hdr">
+    <div><h2 id="pg-title">Extraction</h2><p id="pg-sub">Upload, extract, and generate CV documents</p></div>
+    <button class="btn btn-s btn-sm" onclick="refresh()"><i data-lucide="refresh-cw" style="width:13px"></i> Refresh</button>
+  </div>
+
+  <!-- ═══ EXTRACTION ═══ -->
+  <div id="page-extract">
+    <div class="wiz-steps">
+      <div class="wiz-step active" data-wiz="1" onclick="wizGo(1)"><span class="wiz-num">1</span>Configure</div>
+      <div class="wiz-step" data-wiz="2" onclick="wizGo(2)"><span class="wiz-num">2</span>Upload CV</div>
+      <div class="wiz-step" data-wiz="3" onclick="wizGo(3)"><span class="wiz-num">3</span>Process</div>
+      <div class="wiz-step" data-wiz="4" onclick="wizGo(4)"><span class="wiz-num">4</span>Review &amp; Download</div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="wiz-panel active" id="wp1">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:18px">
+        <i data-lucide="cpu" style="width:15px;color:var(--accent)"></i>
+        <span style="font-size:12px;font-weight:500">AI Model:</span>
+        <select id="ext-model" style="width:auto;padding:5px 10px;font-size:12px">
+          <option value="gpt-4o">GPT-4o (OpenAI)</option>
+          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+          <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+        </select>
+      </div>
+      <div class="grid2">
+        <div>
+          <div class="card-t" style="margin-bottom:10px">Template</div>
+          <div class="uz" id="wtz" onclick="if(!tplFile)document.getElementById('wti').click()">
+            <input type="file" id="wti" accept=".docx" style="display:none" onchange="handleTmpl(this.files[0])">
+            <div id="wti-idle"><div class="u-icon">📄</div><div class="u-title">Upload Vorlage</div><div class="u-desc">DOCX template with placeholders</div></div>
+            <div id="wti-active" class="hidden">
+              <div class="ufi"><div class="fi" style="background:var(--accent-bg);color:var(--accent)">📄</div><div style="flex:1"><div class="fn" id="wt-name"></div><div class="fs" id="wt-size"></div></div><button class="btn btn-d btn-sm" onclick="event.stopPropagation();resetTmpl()"><i data-lucide="x" style="width:11px"></i></button></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card-t" style="margin-bottom:10px">Job Profile</div>
+          <div class="fg"><select id="wiz-profile"><option value="schweisser">Schweisser / Welder</option><option value="schlosser">Schlosser</option><option value="cnc">CNC Operator</option><option value="elektriker">Elektriker</option><option value="">Generic</option></select></div>
+          <div class="fg"><input type="text" id="wiz-job" placeholder="Job Posting Titel (z.B. Schweißer MIG/MAG)"></div>
+          <div class="grid2">
+            <div class="fg"><label class="fl">EKP</label><input type="text" id="wiz-ekp" placeholder="X|YYY|XXX|Z"></div>
+            <div class="fg"><label class="fl">SVS (EUR)</label><input type="text" id="wiz-svs" placeholder="35,00"></div>
+          </div>
+        </div>
+      </div>
+      <div class="inst-panel">
+        <div class="ph"><span class="pt">Extraktionsanweisungen</span><button class="inst-toggle" onclick="toggleInst()">+ Erweitern</button></div>
+        <div id="inst-body" class="hidden"><textarea id="ext-instructions" placeholder="Zusätzliche Anweisungen für die KI..."></textarea></div>
+      </div>
+      <div style="margin-top:18px;display:flex;justify-content:flex-end">
+        <button class="btn btn-p btn-lg" onclick="wizGo(2)" id="wbn1" disabled>Next: Upload CV <i data-lucide="arrow-right" style="width:15px"></i></button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="wiz-panel" id="wp2">
+      <div class="uz" id="wcz" onclick="if(!cvFile)document.getElementById('wci').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="cvDrop(event)">
+        <input type="file" id="wci" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png" style="display:none" onchange="handleCv(this.files[0])">
+        <div id="wci-idle"><div class="u-icon">📤</div><div class="u-title">Drop CV here or click to browse</div><div class="u-desc">PDF · DOCX · JPEG up to 50 MB</div></div>
+        <div id="wci-active" class="hidden">
+          <div class="ufi" style="max-width:380px;margin:0 auto"><div class="fi" style="background:var(--success-bg);color:var(--success)">✓</div><div style="flex:1"><div class="fn" id="wc-name"></div><div class="fs" id="wc-size"></div></div><button class="btn btn-d btn-sm" onclick="event.stopPropagation();resetCv()"><i data-lucide="x" style="width:11px"></i></button></div>
+          <div style="margin-top:14px;color:var(--success);font-weight:600;font-size:13px">Ready for extraction</div>
+        </div>
+      </div>
+      <div style="margin-top:22px;display:flex;justify-content:space-between">
+        <button class="btn btn-s" onclick="wizGo(1)"><i data-lucide="arrow-left" style="width:13px"></i> Back</button>
+        <button class="btn btn-p btn-lg" onclick="startExtraction()" id="wbe" disabled><i data-lucide="zap" style="width:15px"></i> Start Extraction</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="wiz-panel" id="wp3">
+      <div class="proc-state">
+        <div class="proc-spin"></div>
+        <h3 id="proc-title">Extracting data from CV...</h3>
+        <p id="proc-sub">This may take 30-60 seconds</p>
+        <div class="timer" id="proc-timer">0s</div>
+        <div class="progress-bar" style="max-width:280px;margin:14px auto 0"><div class="progress-fill" id="proc-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="wiz-panel" id="wp4">
+      <div id="res-ok" class="res-banner ok">
+        <div style="display:flex;align-items:center;gap:10px"><i data-lucide="check-circle-2" style="width:20px;color:var(--success)"></i><div><div style="font-weight:700;font-size:13px" id="res-title">Extraction Complete</div><div style="font-size:11px;color:var(--muted)" id="res-sub"></div></div></div>
+        <div style="display:flex;gap:7px"><button class="btn btn-s btn-sm" onclick="dlJson()"><i data-lucide="braces" style="width:13px"></i> JSON</button><button class="btn btn-ok btn-sm" id="btn-dl" onclick="dlDocx()" style="display:none"><i data-lucide="file-down" style="width:13px"></i> DOCX</button></div>
+      </div>
+      <div id="res-err" class="res-banner err hidden"><div style="display:flex;align-items:center;gap:10px"><i data-lucide="alert-circle" style="width:20px;color:var(--danger)"></i><div><div style="font-weight:700;font-size:13px;color:var(--danger)">Error</div><div style="font-size:11px;color:var(--muted)" id="res-err-msg"></div></div></div></div>
+      <div class="res-fields" id="res-fields"></div>
+      <div style="margin-top:22px;display:flex;justify-content:space-between">
+        <button class="btn btn-s" onclick="resetWiz()"><i data-lucide="rotate-ccw" style="width:13px"></i> New Extraction</button>
+        <button class="btn btn-p btn-lg" id="btn-dl2" onclick="dlDocx()" style="display:none"><i data-lucide="file-down" style="width:15px"></i> Download DOCX</button>
+      </div>
+    </div>
+
+    <!-- Recent -->
+    <div class="card" style="margin-top:24px">
+      <div class="card-hdr"><span class="card-t">Recent Extractions</span><button class="btn btn-g btn-sm" onclick="loadRecent()">Refresh</button></div>
+      <div id="recent-list"><p style="text-align:center;color:var(--muted);padding:18px;font-size:12px">No recent extractions</p></div>
+    </div>
+  </div>
+
+  <!-- ═══ CANDIDATES ═══ -->
+  <div id="page-candidates" class="hidden">
+    <div class="card">
+      <div class="card-hdr">
+        <div><span class="card-t">All Candidates</span><div class="card-sub">Click Review to inspect extracted data</div></div>
+        <div style="display:flex;gap:7px;align-items:center">
+          <select id="flt-status" onchange="loadCands()" style="width:auto"><option value="">All</option><option value="UPLOADED">Uploaded</option><option value="EXTRACTING">Extracting</option><option value="EXTRACTED">Extracted</option><option value="PENDING_REVIEW">Pending Review</option><option value="APPROVED">Approved</option><option value="COMPLETED">Completed</option><option value="FAILED">Failed</option></select>
+          <button class="btn btn-p btn-sm" onclick="nav('extract',null)"><i data-lucide="plus" style="width:13px"></i> New</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>Nationality</th><th>Provider</th><th>Status</th><th>Review</th><th>Date</th><th>Actions</th></tr></thead><tbody id="cand-rows"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">Loading...</td></tr></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ═══ TEMPLATES ═══ -->
+  <div id="page-templates" class="hidden">
+    <div class="card">
+      <div class="card-hdr"><div><span class="card-t">Template Management</span><div class="card-sub">Manage DOCX master templates</div></div><button class="btn btn-p btn-sm" onclick="document.getElementById('ti-file').click()">+ Upload</button><input type="file" id="ti-file" accept=".docx" style="display:none" onchange="uploadTmpl(this.files[0])"></div>
+      <div id="tmpl-list"><p style="text-align:center;color:var(--muted);padding:28px">Loading...</p></div>
+    </div>
+  </div>
+
+  <!-- ═══ IDENTCHECK ═══ -->
+  <div id="page-identcheck" class="hidden">
+    <div class="card">
+      <div class="card-hdr"><span class="card-t">ID Document Verification</span></div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Candidate</label><select id="ic-cand"><option value="">Select...</option></select></div>
+        <div class="fg"><label class="fl">Type</label><select id="ic-type"><option value="PASSPORT">Passport</option><option value="ID_CARD">National ID</option><option value="RESIDENCE_PERMIT">Residence Permit</option></select></div>
+      </div>
+      <div class="grid2">
+        <div class="drop-zone" style="padding:24px" onclick="document.getElementById('ic-front').click()"><input type="file" id="ic-front" accept="image/*,.pdf" style="display:none" onchange="icFiles.front=this.files[0];updIc('front',this.files[0].name)"><div style="font-size:24px;margin-bottom:6px">🆔</div><div style="font-weight:600;font-size:13px">Front</div><div id="ic-fn" style="font-size:11px;color:var(--muted);margin-top:3px">Click to upload</div></div>
+        <div class="drop-zone" style="padding:24px" onclick="document.getElementById('ic-back').click()"><input type="file" id="ic-back" accept="image/*,.pdf" style="display:none" onchange="icFiles.back=this.files[0];updIc('back',this.files[0].name)"><div style="font-size:24px;margin-bottom:6px">🔄</div><div style="font-weight:600;font-size:13px">Back</div><div id="ic-bn" style="font-size:11px;color:var(--muted);margin-top:3px">Optional</div></div>
+      </div>
+      <div style="margin-top:12px"><button class="btn btn-p" id="ic-submit" disabled onclick="submitIc()">Upload & Verify</button></div>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS ═══ -->
+  <div id="page-settings" class="hidden">
+    <div style="display:flex;gap:10px;border-bottom:1px solid var(--border);margin-bottom:18px">
+      <button class="btn btn-s" id="tab-ai" onclick="swTab('ai')" style="border-radius:5px 5px 0 0;border-bottom:2px solid var(--accent)">AI Models</button>
+      <button class="btn btn-g" id="tab-sys" onclick="swTab('sys')">System</button>
+    </div>
+    <div id="panel-ai"><div id="mod-list"><p style="text-align:center;color:var(--muted);padding:36px">Loading...</p></div></div>
+    <div id="panel-sys" class="hidden"><div id="sys-list"><p style="text-align:center;color:var(--muted);padding:36px">Loading...</p></div></div>
+  </div>
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div id="page-dashboard" class="hidden">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-lbl">Total</div><div class="stat-val" id="s-total">—</div><div class="stat-sub">All candidates</div></div>
+      <div class="stat-card"><div class="stat-lbl">Review</div><div class="stat-val" id="s-review">—</div><div class="stat-sub">Pending</div></div>
+      <div class="stat-card"><div class="stat-lbl">Completed</div><div class="stat-val" id="s-done">—</div><div class="stat-sub">Stage 2</div></div>
+      <div class="stat-card"><div class="stat-lbl">Failed</div><div class="stat-val" id="s-fail">—</div><div class="stat-sub">Errors</div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="card-t">Recent Candidates</span><button class="btn btn-p btn-sm" onclick="nav('extract',null)">+ New Extraction</button></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Name</th><th>File</th><th>Status</th><th>Review</th><th>Date</th><th>Actions</th></tr></thead><tbody id="dash-rows"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px">Loading...</td></tr></tbody></table></div>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toast-ct" id="toasts"></div>
+
+<!-- Review Modal -->
+<div id="rev-modal" class="modal-ov hidden" onclick="if(event.target===this)closeRev()">
+  <div class="modal">
+    <div class="modal-hdr"><div><strong style="font-size:16px" id="rev-title">Review</strong><p style="color:var(--muted);font-size:11px;margin-top:1px" id="rev-sub"></p></div><button class="modal-close" onclick="closeRev()">&times;</button></div>
+    <div class="modal-body">
+      <div class="grid2">
+        <div class="fg"><label class="fl">Full Name</label><input id="rev-name" type="text"></div>
+        <div class="fg"><label class="fl">Nationality</label><input id="rev-nat" type="text"></div>
+        <div class="fg"><label class="fl">Birth Date</label><input id="rev-dob" type="text"></div>
+        <div class="fg"><label class="fl">Provider</label><input id="rev-prov" type="text" readonly style="opacity:.5"></div>
+      </div>
+      <div class="fg"><label class="fl">Employment History</label><div id="rev-emp" style="background:var(--bg);border-radius:var(--rs);padding:10px;max-height:180px;overflow-y:auto;font-size:12px">Loading...</div></div>
+      <div class="fg"><label class="fl">Skills</label><div id="rev-skills" style="background:var(--bg);border-radius:var(--rs);padding:10px;max-height:100px;overflow-y:auto">Loading...</div></div>
+      <div id="rev-warn" class="gap-warn" style="display:none"><strong style="color:var(--warn)">Review Required</strong> — <span id="rev-cnt">0</span> items need verification.</div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-s" onclick="closeRev()">Cancel</button>
+      <button class="btn btn-d btn-sm" onclick="delCand()">Delete</button>
+      <button class="btn btn-ok" id="rev-approve" onclick="approveCand()">Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Provider Modal -->
+<div id="prov-modal" class="modal-ov hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hdr"><strong style="font-size:16px">Add AI Provider</strong><button class="modal-close" onclick="document.getElementById('prov-modal').classList.add('hidden')">&times;</button></div>
+    <div class="modal-body">
+      <div class="fg"><label class="fl">Type</label><select id="np-type"><option value="OPENAI">OpenAI</option><option value="OPENROUTER">OpenRouter</option><option value="TOGETHER">Together.ai</option><option value="XAI">xAI</option><option value="DEEPSEEK">DeepSeek</option></select></div>
+      <div class="fg"><label class="fl">Name</label><input id="np-name" placeholder="e.g. OpenAI Production"></div>
+      <div class="fg"><label class="fl">API Key</label><input id="np-key" type="password" placeholder="sk-..."></div>
+      <div class="fg"><label class="fl">Model</label><input id="np-model" placeholder="gpt-4o-mini"></div>
+      <div class="fg"><label class="fl">Base URL</label><input id="np-url" placeholder="https://api.openai.com/v1"></div>
+      <div class="fg"><label class="fl">Priority</label><input id="np-pri" type="number" value="1" min="1"></div>
+    </div>
+    <div class="modal-ftr"><button class="btn btn-s" onclick="document.getElementById('prov-modal').classList.add('hidden')">Cancel</button><button class="btn btn-p" onclick="addProv()">Add</button></div>
+  </div>
+</div>
+
+<script>
+const API='/api/v1';let allCands=[],reviewId=null,icFiles={front:null,back:null},tplFile=null,cvFile=null,extTaskId=null,extData=null,tmrIv=null;
+
+const TITLES={extract:['Extraction','Upload, extract, and generate CV documents'],candidates:['Candidates','Manage and review all candidates'],templates:['Templates','Manage DOCX master templates'],identcheck:['IdentCheck','ID verification for compliance'],settings:['AI Settings','Configure models and integrations'],dashboard:['Dashboard','Pipeline overview']};
+
+function nav(pg,el){document.querySelectorAll('[id^="page-"]').forEach(p=>p.classList.add('hidden'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));const p=document.getElementById('page-'+pg);if(p)p.classList.remove('hidden');if(el)el.classList.add('active');else document.querySelector(`[data-page="${pg}"]`)?.classList.add('active');const t=TITLES[pg]||['',''];document.getElementById('pg-title').textContent=t[0];document.getElementById('pg-sub').textContent=t[1];if(pg==='dashboard')loadDash();if(pg==='candidates')loadCands();if(pg==='identcheck')loadIcCands();if(pg==='settings')swTab('ai');if(pg==='templates')loadVorlagen();if(pg==='extract')loadRecent();setTimeout(()=>lucide.createIcons(),40)}
+function refresh(){const a=document.querySelector('.nav-item.active')?.dataset.page||'extract';nav(a,null)}
+
+function toast(m,t='ok'){const e=document.createElement('div');e.className='toast '+(t==='ok'?'ok':'er');e.innerHTML=`<span>${t==='ok'?'✓':'✗'}</span><span>${esc(m)}</span>`;document.getElementById('toasts').appendChild(e);setTimeout(()=>e.remove(),4000)}
+
+async function req(u,o={}){const r=await fetch(API+u,{headers:{'Content-Type':'application/json'},...o});if(!r.ok){let e={};try{e=await r.json()}catch{e={detail:await r.text()||`HTTP ${r.status}`}}throw new Error(typeof e.detail==='object'?(e.detail.error||JSON.stringify(e.detail)):(e.detail||e.message||`HTTP ${r.status}`))}return r.json()}
+
+// Wizard
+function wizGo(s){if(s===2&&!tplFile)return toast('Upload template first','er');if(s===3&&!cvFile)return toast('Upload CV first','er');document.querySelectorAll('.wiz-step').forEach(e=>{const n=+e.dataset.wiz;e.classList.toggle('active',n===s);e.classList.toggle('done',n<s)});document.querySelectorAll('.wiz-panel').forEach(e=>e.classList.remove('active'));const p=document.getElementById('wp'+s);if(p)p.classList.add('active');setTimeout(()=>lucide.createIcons(),40)}
+function resetWiz(){tplFile=null;cvFile=null;extTaskId=null;extData=null;document.getElementById('wti-idle').classList.remove('hidden');document.getElementById('wti-active').classList.add('hidden');document.getElementById('wtz').classList.remove('has-file');document.getElementById('wci-idle').classList.remove('hidden');document.getElementById('wci-active').classList.add('hidden');document.getElementById('wcz').classList.remove('has-file');document.getElementById('wbn1').disabled=true;document.getElementById('wbe').disabled=true;document.getElementById('btn-dl').style.display='none';document.getElementById('btn-dl2').style.display='none';document.getElementById('res-ok').classList.remove('hidden');document.getElementById('res-err').classList.add('hidden');wizGo(1)}
+function toggleInst(){const b=document.getElementById('inst-body'),btn=document.querySelector('.inst-toggle');b.classList.toggle('hidden');btn.textContent=b.classList.contains('hidden')?'+ Erweitern':'- Ausblenden'}
+
+function handleTmpl(f){if(!f)return;tplFile={name:f.name,size:(f.size/1024).toFixed(0)+' KB',_raw:f};document.getElementById('wt-name').textContent=f.name;document.getElementById('wt-size').textContent=tplFile.size;document.getElementById('wti-idle').classList.add('hidden');document.getElementById('wti-active').classList.remove('hidden');document.getElementById('wtz').classList.add('has-file');document.getElementById('wbn1').disabled=false;lucide.createIcons();toast('Template uploaded')}
+function resetTmpl(){tplFile=null;document.getElementById('wti-idle').classList.remove('hidden');document.getElementById('wti-active').classList.add('hidden');document.getElementById('wtz').classList.remove('has-file');document.getElementById('wbn1').disabled=true;document.getElementById('wti').value=''}
+
+function handleCv(f){if(!f)return;cvFile={name:f.name,size:(f.size/1024).toFixed(0)+' KB',_raw:f};document.getElementById('wc-name').textContent=f.name;document.getElementById('wc-size').textContent=cvFile.size;document.getElementById('wci-idle').classList.add('hidden');document.getElementById('wci-active').classList.remove('hidden');document.getElementById('wcz').classList.add('has-file');document.getElementById('wbe').disabled=false}
+function cvDrop(e){e.preventDefault();document.getElementById('wcz').classList.remove('over');const f=e.dataTransfer.files[0];if(f)handleCv(f)}
+function resetCv(){cvFile=null;document.getElementById('wci-idle').classList.remove('hidden');document.getElementById('wci-active').classList.add('hidden');document.getElementById('wcz').classList.remove('has-file');document.getElementById('wbe').disabled=true;document.getElementById('wci').value=''}
+
+async function startExtraction(){
+  if(!tplFile||!cvFile)return;
+  wizGo(3);const t0=Date.now();document.getElementById('proc-bar').style.width='0%';
+  tmrIv=setInterval(()=>{document.getElementById('proc-timer').textContent=Math.round((Date.now()-t0)/1000)+'s'},1000);
+  try{
+    document.getElementById('proc-title').textContent='Uploading CV...';document.getElementById('proc-sub').textContent='Sending file to server';document.getElementById('proc-bar').style.width='10%';
+    const fd=new FormData();fd.append('file',cvFile._raw);const ur=await fetch(API+'/candidates/upload',{method:'POST',body:fd});if(!ur.ok)throw new Error('Upload failed');const cand=await ur.json();
+    document.getElementById('proc-title').textContent='AI extracting data...';document.getElementById('proc-sub').textContent=document.getElementById('ext-model').value;document.getElementById('proc-bar').style.width='30%';
+    const instr=document.getElementById('ext-instructions')?.value||'';const tr=await fetch(API+`/candidates/${cand.id}/extract?instructions=`+encodeURIComponent(instr),{method:'POST',headers:{'Content-Type':'application/json'}});if(!tr.ok)throw new Error('Extract failed: '+await tr.text());document.getElementById('proc-bar').style.width='50%';
+    document.getElementById('proc-sub').textContent='Processing...';let st={status:'QUEUED'};while(true){await new Promise(r=>setTimeout(r,3000));try{st=await req(`/candidates/${cand.id}/status`)}catch{}document.getElementById('proc-bar').style.width=Math.min(90,50+(Date.now()-t0)/120000*40)+'%';document.getElementById('proc-sub').textContent=st.status+'...';if(st.status==='EXTRACTED')break;if(st.status==='FAILED')throw new Error(st.error||'Extraction failed');if(Date.now()-t0>120000)throw new Error('Timeout (120s)')}
+    document.getElementById('proc-bar').style.width='95%';document.getElementById('proc-title').textContent='Loading results...';const full=await req(`/candidates/${cand.id}`);extData=full;
+    if(tplFile._raw&&cvFile._raw){document.getElementById('proc-title').textContent='Generating DOCX...';const pf=new FormData();pf.append('template',tplFile._raw);pf.append('cv_file',cvFile._raw);pf.append('instructions',instr);pf.append('ai_model',document.getElementById('ext-model').value);const pr=await fetch(API+'/extraction/process',{method:'POST',body:pf});if(pr.ok){const pd=await pr.json();if(pd.status==='completed'&&pd.download_url){extTaskId=pd.task_id;document.getElementById('btn-dl').style.display='inline-flex';document.getElementById('btn-dl2').style.display='inline-flex'}}}
+    document.getElementById('proc-bar').style.width='100%';clearInterval(tmrIv);wizGo(4);
+    const sd={fn:full.full_name||'',nat:full.nationality||'',dob:full.date_of_birth||'',exp:(full.employment_history||[]).map(e=>`${e.company_name}: ${e.job_title} (${e.start_date||''} - ${e.end_date||''})`).join('\n'),skills:(full.skill_records||[]).map(s=>s.skill_name).join(', '),langs:(full.language_records||[]).map(l=>`${l.language} (${l.level_normalized})`).join(', ')};
+    const fm=[{l:'Name',k:'fn'},{l:'Nationality',k:'nat'},{l:'Date of Birth',k:'dob'},{l:'Employment History',k:'exp'},{l:'Skills',k:'skills'},{l:'Languages',k:'langs'}];
+    document.getElementById('res-fields').innerHTML=fm.map(f=>{const v=sd[f.k]||'';return`<div class="res-field"><div class="res-fl">${f.l}</div><div class="res-fv ${v?'':'empty'}">${esc(v||'No data').replace(/\n/g,'<br>')}</div></div>`}).join('');
+    document.getElementById('res-title').textContent=full.full_name||'Extraction Complete';document.getElementById('res-sub').textContent=`${(full.employment_history||[]).length} positions, ${(full.skill_records||[]).length} skills`;document.getElementById('res-err').classList.add('hidden');document.getElementById('res-ok').classList.remove('hidden');toast('Extraction complete!');setTimeout(loadRecent,500)
+  }catch(e){clearInterval(tmrIv);document.getElementById('res-err').classList.remove('hidden');document.getElementById('res-err-msg').textContent=e.message;document.getElementById('res-ok').classList.add('hidden');wizGo(4);toast(e.message,'er')}finally{document.getElementById('proc-bar').style.width='100%';setTimeout(()=>lucide.createIcons(),40)}
+}
+
+function dlDocx(){if(!extTaskId)return toast('No DOCX','er');window.open(API+'/extraction/download/'+extTaskId,'_blank')}
+function dlJson(){if(!extData)return;const b=new Blob([JSON.stringify(extData,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='extraction-data.json';a.click();URL.revokeObjectURL(a.href)}
+
+async function loadRecent(){try{const d=await req('/candidates');allCands=Array.isArray(d)?d:[];const r=allCands.slice(0,8);const el=document.getElementById('recent-list');if(!r.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:18px;font-size:12px">No recent extractions</p>';return}el.innerHTML=r.map(c=>`<div class="recent-item" onclick="openRev('${c.id}')"><div style="font-size:18px;flex-shrink:0">${c.status==='COMPLETED'?'✅':c.status==='FAILED'?'❌':'📄'}</div><div><div class="ri-name">${esc(c.full_name||'Unknown')}</div><div class="ri-date">${esc(c.original_filename)} · ${fmtD(c.created_at)}</div></div><div style="margin-left:auto"><span class="bs bs-${c.status}">${c.status}</span></div></div>`).join('')}catch{}}
+
+// Candidates
+async function loadCands(){try{let d=await req('/candidates');allCands=Array.isArray(d)?d:[];const f=document.getElementById('flt-status')?.value||'';const l=f?allCands.filter(c=>c.status===f):allCands;document.getElementById('cand-rows').innerHTML=l.length?l.map(c=>`<tr><td><strong>${esc(c.full_name||'Unknown')}</strong></td><td>${esc(c.nationality||'—')}</td><td style="color:var(--muted);font-size:11px">${esc(c.extraction_provider||'—')}</td><td><span class="bs bs-${c.status}">${c.status}</span></td><td style="text-align:center"><span class="rev-dot ${c.needs_review?'pending':'ok'}">${c.needs_review?'!':'✓'}</span></td><td style="color:var(--muted)">${fmtD(c.created_at)}</td><td><button class="btn btn-s btn-sm" onclick="openRev('${c.id}')">Review</button></td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">No candidates</td></tr>'}catch{toast('Failed to load','er')}}
+
+// Review
+async function openRev(id){reviewId=id;const c=allCands.find(x=>x.id===id)||{};document.getElementById('rev-title').textContent=c.full_name||c.original_filename||'Review';document.getElementById('rev-sub').textContent=c.status||'';document.getElementById('rev-name').value=c.full_name||'';document.getElementById('rev-nat').value=c.nationality||'';document.getElementById('rev-dob').value=c.date_of_birth||'';document.getElementById('rev-prov').value=c.extraction_provider||'—';document.getElementById('rev-emp').textContent='Loading...';document.getElementById('rev-skills').textContent='Loading...';document.getElementById('rev-modal').classList.remove('hidden');try{const r=await req(`/candidates/${id}/review`);const d=r;const cn=d.candidate||{};document.getElementById('rev-name').value=cn.full_name||c.full_name||'';document.getElementById('rev-nat').value=cn.nationality||c.nationality||'';document.getElementById('rev-dob').value=cn.date_of_birth||'';const nr=d.needs_review_count||0;document.getElementById('rev-cnt').textContent=nr;document.getElementById('rev-warn').style.display=nr>0?'block':'none';const ab=document.getElementById('rev-approve');if(ab){ab.disabled=nr>0;ab.title=nr>0?`Verify ${nr} items first`:'Ready'}const empEl=document.getElementById('rev-emp');const empL=d.employment_history||[];empEl.innerHTML=empL.length?empL.map(e=>`<div style="padding:8px;border-bottom:1px solid var(--border);${e.is_gap_record?'background:var(--warn-bg)':''}"><div style="display:flex;justify-content:space-between"><strong>${esc(e.job_title||'Gap')}</strong><div>${e.is_gap_record?'<span style="color:var(--warn);font-size:10px;margin-right:4px">GAP</span>':''}${e.needs_review?'<span style="color:var(--warn);font-size:10px">REVIEW</span>':''}</div></div><div style="color:var(--muted);font-size:11px">${esc(e.company_name||'')} · ${e.start_date||'?'} → ${e.end_date||'Present'}</div></div>`).join(''):'<p style="color:var(--muted);font-size:12px">No data</p>';const skEl=document.getElementById('rev-skills');const skL=d.skills||[];skEl.innerHTML=skL.length?skL.map(s=>`<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 8px;background:var(--bg3);border-radius:16px;margin:2px;font-size:11px"><strong>${esc(s.skill_name)}</strong><span style="color:var(--muted)">${s.level||''}</span>${s.needs_review?'<span style="color:var(--warn)">⚠</span>':''}</span>`).join(''):'<p style="color:var(--muted);font-size:12px">No skills</p>'}catch{toast('Review load failed','er')}}
+function closeRev(){document.getElementById('rev-modal').classList.add('hidden');reviewId=null}
+async function approveCand(){if(!reviewId)return;try{await req(`/candidates/${reviewId}/approve?approved_by=recruiter`,{method:'POST'});toast('Approved!');closeRev();loadDash();loadCands()}catch{toast('Failed','er')}}
+async function delCand(){if(!reviewId||!confirm('Delete permanently?'))return;try{await req(`/candidates/${reviewId}`,{method:'DELETE'});toast('Deleted');closeRev();loadDash();loadCands()}catch{toast('Failed','er')}}
+
+// IdentCheck
+async function loadIcCands(){try{const d=await req('/candidates');const s=document.getElementById('ic-cand');s.innerHTML='<option value="">Select...</option>'+(Array.isArray(d)?d:[]).map(c=>`<option value="${c.id}">${esc(c.full_name||'Unknown')}</option>`).join('')}catch{}}
+function updIc(side,n){document.getElementById(`ic-${side==='front'?'f':'b'}n`).textContent=n;document.getElementById('ic-submit').disabled=!(icFiles.front&&document.getElementById('ic-cand').value)}
+async function submitIc(){const cid=document.getElementById('ic-cand').value;if(!cid||!icFiles.front)return;const fd=new FormData();fd.append('front_image',icFiles.front);if(icFiles.back)fd.append('back_image',icFiles.back);fd.append('document_type',document.getElementById('ic-type').value);try{const r=await fetch(API+`/candidates/${cid}/identcheck/upload`,{method:'POST',body:fd});if(!r.ok)throw new Error('Upload failed');toast('ID uploaded');icFiles={front:null,back:null};document.getElementById('ic-submit').disabled=true}catch{toast('Failed','er')}}
+
+// Settings
+function swTab(t){document.getElementById('tab-ai').className=t==='ai'?'btn btn-s':'btn btn-g';document.getElementById('tab-sys').className=t==='sys'?'btn btn-s':'btn btn-g';document.getElementById('panel-ai').classList.toggle('hidden',t!=='ai');document.getElementById('panel-sys').classList.toggle('hidden',t!=='sys');if(t==='ai')loadProvs();else loadSys()}
+async function loadProvs(){const el=document.getElementById('mod-list');try{const d=await req('/settings/providers');if(!d||!d.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:36px">No models configured</p>';return}el.innerHTML=d.map(p=>`<div class="prov-card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="pn">${esc(p.display_name)}</div><div class="pt">${esc(p.provider_type)}</div></div><span class="prov-st ${p.is_validated?'ok':'err'}" id="pst-${p.id}">${p.is_validated?'Connected':'Not verified'}</span></div><div class="pk">••••••••••${esc(p.api_key_hint)}</div><div class="pm">Model: ${esc(p.model_selected)}</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer"><input type="checkbox" ${p.is_active?'checked':''} onchange="togProv('${p.id}',this.checked)"> Active</label><button class="btn btn-s btn-sm" onclick="testProv('${p.id}',this)">Verify</button></div></div>`).join('');lucide.createIcons()}catch{el.innerHTML='<div style="color:var(--danger)">Error loading</div>'}}
+async function loadSys(){const el=document.getElementById('sys-list');try{const d=await req('/settings/system');el.innerHTML=d&&d.length?d.map(s=>`<div class="sys-row"><div style="font-size:11px;font-weight:700;color:var(--muted)">${esc(s.category)}</div><div style="font-weight:600;font-size:12px">${esc(s.key_name)}</div><div style="font-family:monospace;color:var(--accent);font-size:11px">•••••••${esc(s.value_hint||'')}</div></div>`).join(''):'<p style="text-align:center;color:var(--muted);padding:36px">No settings</p>'}catch{}}
+async function togProv(id,a){try{await req(`/settings/providers/${id}`,{method:'PATCH',body:JSON.stringify({is_active:a})});toast('Updated')}catch{loadProvs()}}
+async function testProv(id,btn){const st=document.getElementById(`pst-${id}`);const old=btn.innerHTML;btn.innerHTML='Testing...';st.className='prov-st test';st.textContent='Testing...';try{const r=await req(`/settings/providers/${id}/validate`,{method:'POST'});st.className=r.is_valid?'prov-st ok':'prov-st err';st.textContent=r.is_valid?`OK (${r.latency_ms}ms)`:'Failed';if(!r.is_valid)toast(r.error||'Failed','er')}catch{st.className='prov-st err';st.textContent='Error';toast('Error','er')}finally{btn.innerHTML=old}}
+async function addProv(){const n=document.getElementById('np-name').value.trim(),k=document.getElementById('np-key').value.trim(),t=document.getElementById('np-type').value;if(!n||!k)return toast('Name and key required','er');try{await req('/settings/providers',{method:'POST',body:JSON.stringify({display_name:n,provider_type:t,api_key:k,model_selected:document.getElementById('np-model').value||'auto',priority:+document.getElementById('np-pri').value||99})});toast('Model added');document.getElementById('np-name').value='';document.getElementById('np-key').value='';loadProvs()}catch{toast('Error','er')}}
+
+// Templates
+async function loadVorlagen(){try{const t=await req('/templates/');const el=document.getElementById('tmpl-list');if(!t.length){el.innerHTML='<p style="text-align:center;color:var(--muted);padding:28px">No templates</p>';return}el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">${t.map(x=>`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;${x.is_active?'border-color:var(--success)':''}"><div style="font-size:20px;margin-bottom:8px">📄</div><div style="font-weight:600;font-size:13px">${esc(x.name)}</div><div style="font-size:10px;color:var(--muted);margin-top:2px">${x.file_size} · ${x.template_type}</div>${x.is_active?'<div style="margin-top:8px"><span class="bs bs-APPROVED">ACTIVE</span></div>':''}<div style="display:flex;gap:6px;margin-top:10px">${!x.is_active?`<button class="btn btn-p btn-sm" onclick="setActiveTmpl('${x.id}')">Set Active</button>`:''}<button class="btn btn-d btn-sm" onclick="delTmpl('${x.id}')">Delete</button></div></div>`).join('')}</div>`}catch{}}
+async function uploadTmpl(f){if(!f)return;const fd=new FormData();fd.append('file',f);fd.append('template_type','lebenslauf');try{toast('Uploading...');const r=await fetch(API+'/templates/upload',{method:'POST',body:fd});if(!r.ok)throw new Error();toast('Template uploaded');loadVorlagen()}catch{toast('Upload failed','er')}}
+async function setActiveTmpl(id){try{await req(`/templates/${id}/active`,{method:'PATCH'});toast('Set active');loadVorlagen()}catch{}}
+async function delTmpl(id){if(!confirm('Delete?'))return;try{await req(`/templates/${id}`,{method:'DELETE'});toast('Deleted');loadVorlagen()}catch{}}
+
+// Dashboard
+async function loadDash(){try{const d=await req('/candidates');allCands=Array.isArray(d)?d:[];document.getElementById('s-total').textContent=allCands.length;document.getElementById('s-review').textContent=allCands.filter(c=>c.needs_review).length;document.getElementById('s-done').textContent=allCands.filter(c=>c.status==='COMPLETED').length;document.getElementById('s-fail').textContent=allCands.filter(c=>c.status==='FAILED').length;const rc=allCands.filter(c=>c.needs_review).length;const b=document.getElementById('rev-badge');b.textContent=rc;b.classList.toggle('hidden',rc===0);const rows=allCands.slice(0,8);document.getElementById('dash-rows').innerHTML=rows.length?rows.map(c=>`<tr><td><strong>${esc(c.full_name||'Unknown')}</strong></td><td style="color:var(--muted);font-size:11px">${esc(c.original_filename)}</td><td><span class="bs bs-${c.status}">${c.status}</span></td><td style="text-align:center"><span class="rev-dot ${c.needs_review?'pending':'ok'}">${c.needs_review?'!':'✓'}</span></td><td style="color:var(--muted)">${fmtD(c.created_at)}</td><td><button class="btn btn-s btn-sm" onclick="openRev('${c.id}')">${c.needs_review?'Review':'View'}</button></td></tr>`).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:28px">No candidates yet</td></tr>'}catch{}}
+
+async function checkHealth(){try{const h=await fetch('/api/v1/health').then(r=>r.json());document.getElementById('api-dot').className='api-dot';document.getElementById('api-txt').textContent='API v'+h.version}catch{document.getElementById('api-dot').className='api-dot off';document.getElementById('api-txt').textContent='Offline'}}
+
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function fmtD(s){try{return new Date(s).toLocaleDateString('de-DE')}catch{return s||'—'}}
+
+checkHealth();setInterval(checkHealth,30000);loadDash();loadRecent();lucide.createIcons();
+</script>
 </body>
 </html>

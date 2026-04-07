@@ -8,7 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import engine, Base
-from app.routers import candidates, processing, review, settings_router, identcheck, downloads
+from app.routers import candidates, processing, review, settings_router, identcheck, downloads, templates, extraction
+import app.models  # <--- CRITICAL: Import all models so Base.metadata populates BEFORE create_all
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -70,6 +71,8 @@ app.include_router(review.router, prefix="/api/v1")
 app.include_router(settings_router.router, prefix="/api/v1/settings")
 app.include_router(identcheck.router, prefix="/api/v1")
 app.include_router(downloads.router, prefix="/api/v1")
+app.include_router(templates.router, prefix="/api/v1/templates")
+app.include_router(extraction.router, prefix="/api/v1/extraction")
 
 # Only mount static files if the directory exists (prevents crash in containers)
 _static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
@@ -86,3 +89,4 @@ else:
 @app.get("/")
 async def root():
     return {"service": "CV Extractor API", "version": "1.0.0", "docs": "/docs"}
+

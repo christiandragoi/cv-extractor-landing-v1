@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from typing import Optional, Dict
+import uuid
 from uuid import UUID
 from sqlalchemy import String, Date, DateTime, ForeignKey, Boolean, func
 from app.db_types import PGUUID, JSONB
@@ -10,8 +11,8 @@ from app.database import Base
 class IdentityDocument(Base):
     __tablename__ = "identity_documents"
 
-    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
-    candidate_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[UUID] = mapped_column(PGUUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
+    candidate_id: Mapped[UUID] = mapped_column(PGUUID(), ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     document_type: Mapped[str] = mapped_column(String(50), nullable=False)

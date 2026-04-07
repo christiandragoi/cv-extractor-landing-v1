@@ -7,8 +7,11 @@ from app.models.ai_provider import AIProvider
 from app.models.job_profile import JobProfile
 from app.models.identity_document import IdentityDocument
 from app.models.audit_log import AuditLog
+from app.models.template import Template
+from app.models.system_setting import SystemSetting
 
 __all__ = [
     "Candidate", "EmploymentRecord", "EducationRecord", "SkillRecord",
-    "LanguageRecord", "AIProvider", "JobProfile", "IdentityDocument", "AuditLog"
+    "LanguageRecord", "AIProvider", "JobProfile", "IdentityDocument", "AuditLog",
+    "Template", "SystemSetting"
 ]

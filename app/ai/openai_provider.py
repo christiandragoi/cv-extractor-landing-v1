@@ -12,18 +12,23 @@ class OpenAIProvider(BaseAIProvider):
             "Content-Type": "application/json"
         }
 
-    async def chat_complete(self, messages: List[Dict[str, str]], max_tokens: int = 1000, temperature: float = 0.1) -> str:
+    async def chat_complete(self, messages: List[Dict[str, str]], max_tokens: int = 8000, temperature: float = 0.1) -> str:
         async with httpx.AsyncClient(timeout=60.0) as client:
+            payload = {
+                "model": self.model,
+                "messages": messages,
+                "max_tokens": max_tokens,
+                "temperature": temperature
+            }
+            # Only send response_format for providers known to support it
+            # OpenAI native and some compatible APIs support json_object mode
+            if self.api_url and "openai.com" in self.api_url.lower():
+                payload["response_format"] = {"type": "json_object"}
+                
             response = await client.post(
                 self.api_url,
                 headers=self.headers,
-                json={
-                    "model": self.model,
-                    "messages": messages,
-                    "max_tokens": max_tokens,
-                    "temperature": temperature,
-                    "response_format": {"type": "json_object"}
-                }
+                json=payload
             )
             response.raise_for_status()
             data = response.json()

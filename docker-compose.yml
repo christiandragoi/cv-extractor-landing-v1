@@ -1,63 +1,23 @@
-version: '3.8'
+﻿version: "3.8"
 
 services:
   api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    env_file: .env
-    environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://cv_user:cv_pass@db:5432/cvextractor}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - STORAGE_BACKEND=local
-      - STORAGE_ROOT=/app/storage
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
-      - SECRET_KEY=${SECRET_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-    volumes:
-      - cv_storage:/app/storage
-      - ./static:/app/static:ro
+    build: .
     ports:
-      - "8000:8000"
-    depends_on:
-      - db
-      - redis
-
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
-    env_file: .env
+      - "8001:8001"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://cv_user:cv_pass@db:5432/cvextractor}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379/0}
-      - STORAGE_ROOT=/app/storage
+      - ENVIRONMENT=production
+      - SECRET_KEY=${SECRET_KEY:-change-me}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DATABASE_URL=sqlite+aiosqlite:///./cv_extractor_local.db
+      - STORAGE_ROOT=/app/storage_local
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8001
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
     volumes:
-      - cv_storage:/app/storage
-    depends_on:
-      - db
-      - redis
-
-  db:
-    image: postgres:16-alpine
-    environment:
-      - POSTGRES_USER=cv_user
-      - POSTGRES_PASSWORD=cv_pass
-      - POSTGRES_DB=cvextractor
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-  redis:
-    image: redis:7-alpine
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redis_data:/data
+      - sqlite_data:/app/data
+      - output_files:/app/storage_local/output
 
 volumes:
-  cv_storage:
-  pg_data:
-  redis_data:
+  sqlite_data:
+  output_files:

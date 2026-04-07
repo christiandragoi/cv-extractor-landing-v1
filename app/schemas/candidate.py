@@ -2,6 +2,9 @@ from datetime import date, datetime
 from typing import Optional, List
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict
+from app.schemas.employment import EmploymentRecordRead
+from app.schemas.skill import SkillRecordRead
+from app.schemas.language import LanguageRecordRead
 
 
 class CandidateStatus(BaseModel):
@@ -31,6 +34,11 @@ class CandidateRead(BaseModel):
     extraction_model: Optional[str] = None
     approval_timestamp: Optional[datetime] = None
     approved_by: Optional[str] = None
+    
+    # Nested relationships
+    employment_history: List[EmploymentRecordRead] = []
+    skill_records: List[SkillRecordRead] = []
+    language_records: List[LanguageRecordRead] = []
 
 
 class CandidateCreate(BaseModel):

@@ -31,3 +31,15 @@ class ProviderValidationResponse(BaseModel):
     is_valid: bool
     latency_ms: int
     error: Optional[str] = None
+
+
+class SystemSettingRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    category: str
+    key_name: str
+    value_hint: Optional[str]
+    is_active: bool
+    description: Optional[str]
+

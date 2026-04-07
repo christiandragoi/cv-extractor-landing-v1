@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from typing import Optional, List
+import uuid
 from uuid import UUID
 from sqlalchemy import String, Date, DateTime, Text, ForeignKey, Boolean, func
 from app.db_types import PGUUID, JSONB
@@ -10,7 +11,7 @@ from app.database import Base
 class Candidate(Base):
     __tablename__ = "candidates"
 
-    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
+    id: Mapped[UUID] = mapped_column(PGUUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="UPLOADED")
@@ -20,7 +21,7 @@ class Candidate(Base):
     structured_cv_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     final_cv_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
 
-    job_profile_id: Mapped[Optional[UUID]] = mapped_column(PGUUID(as_uuid=True), ForeignKey("job_profiles.id"), nullable=True)
+    job_profile_id: Mapped[Optional[UUID]] = mapped_column(PGUUID(), ForeignKey("job_profiles.id"), nullable=True)
     recruiter_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     extraction_provider: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     extraction_model: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)

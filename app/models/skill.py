@@ -1,4 +1,5 @@
 from typing import Optional
+import uuid
 from uuid import UUID
 from sqlalchemy import String, ForeignKey, Float, Boolean, Text, func
 from app.db_types import PGUUID
@@ -9,8 +10,8 @@ from app.database import Base
 class SkillRecord(Base):
     __tablename__ = "skill_records"
 
-    id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
-    candidate_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[UUID] = mapped_column(PGUUID(), primary_key=True, default=lambda: str(uuid.uuid4()))
+    candidate_id: Mapped[UUID] = mapped_column(PGUUID(), ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False)
 
     skill_name: Mapped[str] = mapped_column(String(255), nullable=False)
     category: Mapped[str] = mapped_column(String(50), nullable=False)
